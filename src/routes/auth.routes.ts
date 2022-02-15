@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createSessionHandler,
+  getCurrentSessionIdHandler,
   refreshAccessTokenHandler,
 } from "../controller/auth.controller";
 import validateResource from "../middleware/validateResource";
@@ -15,5 +16,6 @@ router.post(
 );
 
 router.post("/api/sessions/refresh", refreshAccessTokenHandler);
+router.post("/api/sessions/current", getCurrentSessionIdHandler);
 
 export default router;

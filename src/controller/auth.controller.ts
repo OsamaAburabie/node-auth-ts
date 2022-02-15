@@ -75,3 +75,24 @@ export async function refreshAccessTokenHandler(req: Request, res: Response) {
 
   return res.send({ accessToken });
 }
+
+export async function getCurrentSessionIdHandler(req: Request, res: Response) {
+  const refreshToken = get(req, "headers.x-refresh");
+
+  const decoded = verifyJwt<{ session: string }>(
+    refreshToken,
+    "refreshTokenPublicKey"
+  );
+
+  if (!decoded) {
+    return res.status(401).send("Could find session");
+  }
+
+  const session = await findSessionById(decoded.session);
+
+  if (!session || !session.valid) {
+    return res.status(401).send("Could find session");
+  }
+
+  return res.send({ session: session._id });
+}
