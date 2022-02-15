@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { get } from "lodash";
+import { get, omit } from "lodash";
+import { privateFields } from "../model/user.model";
 import { CreateSessionInput } from "../schema/auth.schema";
 import {
   findSessionById,
@@ -39,7 +40,11 @@ export async function createSessionHandler(
 
   //send the tokens
 
-  return res.send({ accessToken, refreshToken });
+  return res.send({
+    user: omit(user.toJSON(), privateFields),
+    accessToken,
+    refreshToken,
+  });
 }
 
 export async function refreshAccessTokenHandler(req: Request, res: Response) {

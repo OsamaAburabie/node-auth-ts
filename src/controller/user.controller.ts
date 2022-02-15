@@ -1,11 +1,14 @@
 import { Request, Response } from "express";
+import { omit } from "lodash";
 import { nanoid } from "nanoid";
+import { privateFields } from "../model/user.model";
 import {
   CreateUserInput,
   ForgotPasswordInput,
   ResetPasswordInput,
   VerifyUserInput,
 } from "../schema/user.schema";
+import { signAccessToken, signRefreshToken } from "../service/auth.service";
 import { createUser, findByEmail, findUserById } from "../service/user.service";
 import log from "../utils/logger";
 import sendEmail from "../utils/mailer";
@@ -26,7 +29,16 @@ export async function createUserHandler(
       text: `verification code is ${user.verificationCode} id is ${user._id}`,
     });
 
-    return res.send("user created");
+    //sign a access token
+    const accessToken = signAccessToken(user);
+    //sign a refresh token
+    const refreshToken = await signRefreshToken({ userId: user._id });
+    //send the tokens
+    return res.send({
+      user: omit(user.toJSON(), privateFields),
+      accessToken,
+      refreshToken,
+    });
   } catch (e: any) {
     if (e.code === 11000) {
       return res.status(409).send("user already exists");
